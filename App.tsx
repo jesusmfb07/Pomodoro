@@ -1,118 +1,98 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import { Image, StyleSheet, Text, Platform, Button, View, StatusBar, SafeAreaView,TouchableOpacity } from 'react-native';
+import {useEffect, useState} from "react";
+import Header from "./src/components/Header";
+import Timer from "./src/components/Timer";
+import { Audio } from  "react-native-av"
+const colors =[ "#F7DC6F","#A2D9CE","#D7BDE2"];
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+export default function App()  {
+  const [isWorking, setIsWorking] = useState(false);
+  const [time,setTime] = useState(25 * 60);
+  const [currentTime, setCurrentTime] = useState("POMO" | "SHORT" | "BREAK");
+  const [isActive, setIsActive] = useState(false);
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  useEffect(() => {
+    let interval : any;
+  
+    const startTimer = () => {
+      interval = setInterval(() => {
+        setTime(time - 1);
+      }, 100);
+    };
+  
+    const stopTimer = () => {
+      clearInterval(interval);
+    };
+  
+    if (isActive) {
+      startTimer();
+    } else {
+      stopTimer();
+    }
+  
+    if (time === 0) {
+      setIsActive(false);
+      setIsWorking((prev) => !prev);
+      setTime(isWorking ? 300 : 1500);
+    }
+  
+    return stopTimer;
+  }, [isActive, time]);
+  
+  function handleStartStop(){
+    setIsActive(!isActive);
+  }
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  // async function playSound() {
+  //   const { sound } = await Audio.Sound.createAsync(
+  //     require("")
+  //   )
+  // }
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+    <SafeAreaView
+     style={[styles.container,{ backgroundColor: colors[currentTime]}]}>
+    <View 
+    style={{
+       flex: 1,
+       paddingHorizontal: 15,
+       paddingTop: Platform.OS === "android" ? 30 : 0,
+      }}
+    >
+      <Text style={styles.text}>Pomodoro</Text>
+      <Header 
+        currentTime={currentTime}  
+        setCurrentTime={setCurrentTime} 
+        setTime={setTime}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      <Timer time={time} />
+      <TouchableOpacity onPress={handleStartStop} style={styles.button}>
+         <Text style={{color: 'white',fontWeight: "bold"}}>
+          {isActive ? "STOP" : "START" }
+         </Text>
+      </TouchableOpacity>
+    </View>
+    </SafeAreaView> 
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  text: {
+    fontSize: 32,
+    fontWeight: "bold"
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
+  button:{
+    alignItems: "center",
+    backgroundColor:"#333333",
+    padding: 15,
+    marginTop: 15,
+    borderRadius: 15,
+  }
 });
-
-export default App;
